@@ -31,8 +31,21 @@ public class ProfessionalSkillsClusterAnalyzer {
 			hard.add(dataPoint.subList(4, 8));
 		}
 		
+		// Normalize datasets
+		System.out.println("---------- Results for soft skills ----------");
+		soft = normalizeData(soft);
 		analyzeClusters(soft);
+		System.out.println();
 		
+		System.out.println("---------- Results for middle skills ----------");
+		middle = normalizeData(middle);
+		analyzeClusters(middle);
+		System.out.println();
+		
+		System.out.println("---------- Results for hard skills ----------");
+		hard = normalizeData(hard);
+		analyzeClusters(hard);
+		System.out.println();
 	}
 	
 	private static void analyzeClusters(List<List<Double>> dataPoints) {
@@ -43,5 +56,34 @@ public class ProfessionalSkillsClusterAnalyzer {
 //			System.out.println("AWCD for number of clusters = " + c + " is " + awcd);
 			System.out.println(awcd);
 		}
+	}
+	
+	private static List<List<Double>> normalizeData(List<List<Double>> data) {
+		List<List<Double>> normalizedData = new ArrayList<>();
+		
+		int size = data.size();
+		double[] min = new double[size];
+		double[] max = new double[size];
+		for (int i = 0; i < data.size(); i++) {
+			min[i] = data.get(i).get(0);
+			max[i] = data.get(i).get(0);
+			for (int j = 0; j < data.get(i).size(); j++) {
+				if (data.get(i).get(j) < min[i]) {
+					min[i] = data.get(i).get(j);
+				}
+				
+				if (data.get(i).get(j) > max[i]) {
+					max[i] = data.get(i).get(j);
+				}
+			}
+			
+			List<Double> normalizedPoint = new ArrayList<>();			
+			for (int j = 0; j < data.get(i).size(); j++) {
+				double normalizedVal = (data.get(i).get(j) - min[i]) / (max[i] - min[i]);
+				normalizedPoint.add(normalizedVal);
+			}
+			normalizedData.add(normalizedPoint);
+		}
+		return normalizedData;
 	}
 }
