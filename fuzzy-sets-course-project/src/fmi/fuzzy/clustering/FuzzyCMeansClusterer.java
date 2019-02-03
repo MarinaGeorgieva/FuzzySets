@@ -26,6 +26,8 @@ public class FuzzyCMeansClusterer {
 	
 	private double[][] membershipMatrix;
 	
+	private double[][] distancesMatrix;
+	
 	private List<List<Double>> dataPoints;
 	
 	private List<List<Double>> clusters;
@@ -43,12 +45,17 @@ public class FuzzyCMeansClusterer {
 		this.random = new Random();
 		
 		this.membershipMatrix = null;
+		this.distancesMatrix = null;
 		this.dataPoints = new ArrayList<>();
 		this.clusters = new ArrayList<>();
 	}
 	
 	public double[][] getMembershipMatrix() {
 		return membershipMatrix;
+	}
+	
+	public double[][] getDistancesMatrix() {
+		return distancesMatrix;
 	}
 
 	public List<List<Double>> getClusters() {
@@ -64,7 +71,7 @@ public class FuzzyCMeansClusterer {
 		initializeMembershipMatrix();
 		initializeClusterCenters();
 		
-		double oldObjectiveFunction = 0.0; // calculateObjectiveFunction();
+		double oldObjectiveFunction = calculateObjectiveFunction();
 		int iteration = 0;
 		double difference = 0.0;
 		do {
@@ -74,6 +81,25 @@ public class FuzzyCMeansClusterer {
             difference = Math.abs(newObjectiveFunction - oldObjectiveFunction);
             oldObjectiveFunction = newObjectiveFunction;      
 		} while (difference > epsilon && ++iteration < maxIterations);
+	}
+	
+	public double getAverageWithinClusterDistance() {
+		calculateDistancesMatrix();
+		double awcd = 0.0;
+		double sum = 0.0;
+		for (int i = 0; i < clusters.size(); i++) {
+			double numerator = 0.0;
+			double denominator = 0.0;
+			for (int j = 0; j < dataPoints.size(); j++) {
+				double commonSum = Math.pow(membershipMatrix[j][i], m);
+				numerator += commonSum * (distancesMatrix[j][i] * distancesMatrix[j][i]);
+				denominator += commonSum;
+			}
+			sum += numerator / denominator;
+		}
+		
+		awcd = (1.0 / c) * sum;
+		return awcd;
 	}
 	
 	private void initializeMembershipMatrix() {
@@ -143,7 +169,7 @@ public class FuzzyCMeansClusterer {
 			newClusters.add(clusterCenterCoords);
 		}
 		clusters.clear();
-        clusters = newClusters;
+        clusters.addAll(newClusters);
 	}
 	
 	private double calculateObjectiveFunction() {
@@ -165,5 +191,15 @@ public class FuzzyCMeansClusterer {
 			distance += (yCoord - xCoord) * (yCoord - xCoord);
 		}	
 		return Math.sqrt(distance);
-	}	
+	}
+	
+	private void calculateDistancesMatrix() {
+		distancesMatrix = new double[dataPoints.size()][c];
+		
+		for (int i = 0; i < dataPoints.size(); i++) {
+			for (int j = 0; j < clusters.size(); j++) {
+				distancesMatrix[i][j] = calculateEuclideanDistance(dataPoints.get(i), clusters.get(j));
+			}
+		}
+	}
 }

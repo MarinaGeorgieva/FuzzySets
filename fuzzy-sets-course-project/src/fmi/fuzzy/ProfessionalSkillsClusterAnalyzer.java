@@ -12,7 +12,7 @@ public class ProfessionalSkillsClusterAnalyzer {
 	private static final String FILE_PATH = "data/FAscores_4x4skills.csv";
 	
 	private static final int MIN_CLUSTERS = 2;
-	private static final int MAX_CLUSTERS = 20;
+	private static final int MAX_CLUSTERS = 30;
 	
 	public static void main(String[] args) {
 		List<List<Double>> data = null;
@@ -39,7 +39,9 @@ public class ProfessionalSkillsClusterAnalyzer {
 		for (int c = MIN_CLUSTERS; c <= MAX_CLUSTERS; c++) {
 			FuzzyCMeansClusterer fuzzyCMeansClusterer = new FuzzyCMeansClusterer(c, 1000, 2);
 			fuzzyCMeansClusterer.cluster(dataPoints);
-	
+			double awcd = fuzzyCMeansClusterer.getAverageWithinClusterDistance();
+//			System.out.println("AWCD for number of clusters = " + c + " is " + awcd);
+			System.out.println(awcd);
 		}
 	}
 }
