@@ -1,4 +1,4 @@
-package fuzzy;
+package fmi.fuzzy.utils;
 
 import java.io.IOException;
 import java.nio.file.Files;

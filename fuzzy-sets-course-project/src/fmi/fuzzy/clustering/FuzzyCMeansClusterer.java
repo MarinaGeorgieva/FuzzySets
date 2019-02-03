@@ -1,10 +1,15 @@
-package fuzzy;
+package fmi.fuzzy.clustering;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class FuzzyCMeans { 
+import org.apache.commons.math3.util.MathArrays;
+
+public class FuzzyCMeansClusterer { 
+	
+	private static final double DEFAULT_EPSILON = 0.001;
 
 	// The number of clusters 
 	private final int c;
@@ -24,8 +29,12 @@ public class FuzzyCMeans {
 	private List<List<Double>> dataPoints;
 	
 	private List<List<Double>> clusters;
+	
+	public FuzzyCMeansClusterer(int c, int maxIterations, double m) {
+		this(c, DEFAULT_EPSILON, maxIterations, m);
+	}
 
-	public FuzzyCMeans(int c, double epsilon, int maxIterations, double m) {
+	public FuzzyCMeansClusterer(int c, double epsilon, int maxIterations, double m) {
 		super();
 		this.c = c;
 		this.epsilon = epsilon;
@@ -38,31 +47,52 @@ public class FuzzyCMeans {
 		this.clusters = new ArrayList<>();
 	}
 	
-	public List<List<Double>> cluster(List<List<Double>> data) {
+	public double[][] getMembershipMatrix() {
+		return membershipMatrix;
+	}
+
+	public List<List<Double>> getClusters() {
+		return clusters;
+	}
+
+	public void cluster(List<List<Double>> data) {
 		int size = data.size();
 		
 		dataPoints = data;
 		membershipMatrix = new double[size][c];
 		
+		initializeMembershipMatrix();
 		initializeClusterCenters();
-		double oldObjectiveFunction = 0.0; // calculateObjectiveFunction();
 		
+		double oldObjectiveFunction = 0.0; // calculateObjectiveFunction();
 		int iteration = 0;
 		double difference = 0.0;
 		do {
-			updateMembershipMatrix();
 			updateClusterCenters();
+			updateMembershipMatrix();
             double newObjectiveFunction = calculateObjectiveFunction();
             difference = Math.abs(newObjectiveFunction - oldObjectiveFunction);
             oldObjectiveFunction = newObjectiveFunction;      
 		} while (difference > epsilon && ++iteration < maxIterations);
-		
-		return clusters;
+	}
+	
+	private void initializeMembershipMatrix() {
+		for (int i = 0; i < dataPoints.size(); i++) {
+			for (int j = 0; j < c; j++) {
+				membershipMatrix[i][j] = random.nextDouble();
+			}
+			membershipMatrix[i] = MathArrays.normalizeArray(membershipMatrix[i], 1.0);
+		}
 	}
 	
 	private void initializeClusterCenters() {
+//		for (int i = 0; i < c; i++) {
+//			List<Double> center = dataPoints.get(random.nextInt(dataPoints.size()));
+//			clusters.add(center);
+//		}
+		
 		for (int i = 0; i < c; i++) {
-			List<Double> center = dataPoints.get(random.nextInt(dataPoints.size()));
+			List<Double> center = new ArrayList<Double>(Collections.nCopies(dataPoints.get(0).size(), 0.0));
 			clusters.add(center);
 		}
 	}
